@@ -24,6 +24,19 @@ The system is built from the ground up to be modular and highly extensible:
 A recommendation engine requires constant, rapid cross-referencing. To optimize performance, the system pre-computes and indexes the dataset upon initialization:
 * Constructs multi-dimensional maps (e.g., `Map<Integer, List<Rating>>` for `ratingsByItem` and `ratingsByUser`) to guarantee **O(1) access times** during the active recommendation phase.
 * Pre-calculates and caches the global average and individual biases, drastically reducing the computational complexity of the Collaborative Filtering matrix operations.
+## 🚀 Interactive Live Demo
+
+
+
+To make the logic easily testable without needing to clone the repo or set up a local environment, I deployed a lightweight HTML/JS front-end. 
+
+
+
+👉 **[Click here to play with the Live Demo](https://saritnerya.github.io/oop-recommender-system/demo.html)** 👈
+
+
+
+The web interface allows you to select different users, toggle between the three recommendation algorithms in real-time, and manipulate the dataset size to observe how data volume impacts the prediction accuracy.
 
 ## 🏗️ Architecture (UML)
 
