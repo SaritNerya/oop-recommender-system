@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recommender System — Live Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0d0f14;
+    --surface:  #151820;
+    --border:   #252a36;
+    --pop:      #c8f060;
+    --profile:  #60c8f0;
+    --sim:      #f06090;
+    --text:     #e8eaf0;
+    --muted:    #5a6080;
+    --card-bg:  #1a1e2a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    min-height: 100vh;
+  }
+
+  /* ── header ── */
+  header {
+    padding: 48px 48px 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 38px;
+    font-weight: 300;
+    letter-spacing: -1px;
+    line-height: 1.1;
+  }
+  h1 em { font-style: italic; color: var(--pop); }
+  .subtitle { color: var(--muted); margin-top: 8px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+
+  /* ── layout ── */
+  .shell { display: grid; grid-template-columns: 300px 1fr; min-height: calc(100vh - 120px); }
+
+  /* ── sidebar ── */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .label { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  select, input[type=range] {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    border-radius: 4px;
+    appearance: none;
+    cursor: pointer;
+    outline: none;
+    transition: border-color .2s;
+  }
+  select:focus, select:hover { border-color: var(--pop); }
+  input[type=range] { padding: 4px 0; accent-color: var(--pop); }
+
+  .algo-btns { display: flex; flex-direction: column; gap: 8px; }
+  .algo-btn {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: left;
+    transition: all .2s;
+  }
+  .algo-btn:hover { border-color: currentColor; }
+  .algo-btn.active[data-algo="popularity"] { color: var(--pop); border-color: var(--pop); background: rgba(200,240,96,.07); }
+  .algo-btn.active[data-algo="profile"]    { color: var(--profile); border-color: var(--profile); background: rgba(96,200,240,.07); }
+  .algo-btn.active[data-algo="similarity"] { color: var(--sim); border-color: var(--sim); background: rgba(240,96,144,.07); }
+
+  .user-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+    line-height: 1.8;
+  }
+  .user-card span { color: var(--muted); }
+  .user-card strong { color: var(--text); }
+
+  /* ── main ── */
+  main { padding: 32px 40px; }
+  .algo-desc {
+    background: var(--card-bg);
+    border-left: 3px solid var(--pop);
+    padding: 14px 18px;
+    border-radius: 0 6px 6px 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+    margin-bottom: 28px;
+    transition: border-color .3s;
+  }
+  .algo-desc[data-active="profile"]    { border-color: var(--profile); }
+  .algo-desc[data-active="similarity"] { border-color: var(--sim); }
+
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 18px;
+  }
+  .results-header h2 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 22px; }
+  .badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(200,240,96,.12);
+    color: var(--pop);
+    border: 1px solid rgba(200,240,96,.25);
+  }
+  .badge[data-algo="profile"]    { background: rgba(96,200,240,.12); color: var(--profile); border-color: rgba(96,200,240,.25); }
+  .badge[data-algo="similarity"] { background: rgba(240,96,144,.12); color: var(--sim); border-color: rgba(240,96,144,.25); }
+
+  /* ── recommendation cards ── */
+  .recs { display: flex; flex-direction: column; gap: 10px; }
+  .rec-item {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    align-items: center;
+    gap: 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: slideIn .3s forwards;
+  }
+  @keyframes slideIn { to { opacity: 1; transform: none; } }
+  .rank { font-size: 18px; font-family: 'Fraunces', serif; font-style: italic; color: var(--muted); }
+  .item-info .name { font-size: 13px; margin-bottom: 2px; }
+  .item-info .meta { font-size: 11px; color: var(--muted); }
+  .score-bar-wrap { display: flex; align-items: center; gap: 10px; }
+  .score-val { font-size: 13px; width: 36px; text-align: right; }
+  .bar-track { width: 100px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .bar-fill {
+    height: 100%;
+    background: var(--pop);
+    border-radius: 2px;
+    transform-origin: left;
+    animation: growBar .5s ease forwards;
+  }
+  @keyframes growBar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .bar-fill.profile    { background: var(--profile); }
+  .bar-fill.similarity { background: var(--sim); }
+
+  /* ── bias panel ── */
+  .bias-panel {
+    margin-top: 36px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+  }
+  .bias-panel h3 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 18px; margin-bottom: 16px; }
+  .bias-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .bias-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .bias-box .key  { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 6px; }
+  .bias-box .val  { font-size: 22px; font-family: 'Fraunces', serif; }
+  .bias-box .val.pos { color: var(--sim); }
+  .bias-box .val.neg { color: var(--profile); }
+  .bias-box .val.neu { color: var(--pop); }
+
+  /* ── empty / loading ── */
+  .empty { color: var(--muted); padding: 40px 0; text-align: center; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Recommender <em>System</em></h1>
+  <p class="subtitle">OOP Design Exercise · Java Simulation · Interactive Demo</p>
+</header>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div>
+      <div class="label">Select User</div>
+      <select id="userSelect"></select>
+    </div>
+
+    <div id="userCardWrap">
+      <div class="label">User Profile</div>
+      <div class="user-card" id="userCard"></div>
+    </div>
+
+    <div>
+      <div class="label">Algorithm</div>
+      <div class="algo-btns">
+        <button class="algo-btn active" data-algo="popularity">▲ Popularity-Based</button>
+        <button class="algo-btn" data-algo="profile">◈ Profile-Based</button>
+        <button class="algo-btn" data-algo="similarity">⬡ Similarity-Based (CF)</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="label">Dataset Size — <span id="sizeLabel">200</span> ratings</div>
+      <input type="range" id="sizeSlider" min="50" max="500" step="50" value="200">
+    </div>
+  </aside>
+
+  <main>
+    <div class="algo-desc" id="algoDesc" data-active="popularity">
+      Recommends items with at least 100 ratings, sorted by average score. Safe choice for cold-start users.
+    </div>
+
+    <div class="results-header">
+      <h2>Top 10 Recommendations</h2>
+      <span class="badge" id="algoBadge" data-algo="popularity">popularity</span>
+    </div>
+
+    <div class="recs" id="recsList"></div>
+
+    <div class="bias-panel" id="biasPanel" style="display:none">
+      <h3>Bias Decomposition <span style="color:var(--muted);font-size:14px;font-family:'DM Mono'">(CF only)</span></h3>
+      <div class="bias-grid">
+        <div class="bias-box"><div class="key">Global Bias</div><div class="val neu" id="bGlobal">—</div></div>
+        <div class="bias-box"><div class="key">User Bias</div><div class="val" id="bUser">—</div></div>
+        <div class="bias-box"><div class="key">Avg Item Bias</div><div class="val" id="bItem">—</div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Synthetic data generation ──────────────────────────────────────────────
+
+const GENRES  = ['Sci-Fi','Drama','Comedy','Thriller','Romance','Action','Documentary','Fantasy','Horror','Animation'];
+const NAMES_M = ['Amir','Rotem','Yoav','Nir','Eitan','Omer','Guy','Tal','Dan','Lior'];
+const NAMES_F = ['Maya','Noa','Shira','Hila','Tali','Reut','Gal','Yael','Dana','Michal'];
+const ITEM_TITLES = [
+  'Midnight Signal','The Last Archive','Parallel Echo','Frozen Orbit','City of Dust',
+  'Second Bloom','The Glass Hour','Iron Meridian','Silent Garden','Fracture Point',
+  'Blue Anomaly','Horizon Drift','Paper Kingdom','The Outer Rim','Ember Season',
+  'Quiet Storm','Dark Lattice','Golden Thread','Lost Frequency','Phantom Bridge',
+  'Velvet Protocol','Neon Pulse','Broken Compass','Crystal Maze','Silver Tide',
+  'The Known World','Cascade Effect','Final Horizon','Open Circuit','Wild Static'
+];
+
+let rng = (seed => {
+  return () => { seed ^= seed << 13; seed ^= seed >> 17; seed ^= seed << 5; return (seed >>> 0) / 4294967296; };
+})(42);
+
+function buildDataset(numRatings) {
+  rng = (seed => {
+    return () => { seed ^= seed << 13; seed ^= seed >> 17; seed ^= seed << 5; return (seed >>> 0) / 4294967296; };
+  })(42);
+
+  const users = Array.from({length: 20}, (_, i) => ({
+    id: i + 1,
+    name: i % 2 === 0 ? NAMES_F[Math.floor(i/2) % 10] : NAMES_M[Math.floor(i/2) % 10],
+    gender: i % 2 === 0 ? 'F' : 'M',
+    age: 18 + Math.floor(rng() * 45)
+  }));
+
+  const items = ITEM_TITLES.map((title, i) => ({
+    id: i + 1,
+    name: title,
+    genre: GENRES[i % GENRES.length]
+  }));
+
+  // Each user has a genre affinity
+  const userAffinity = users.map(() => Math.floor(rng() * GENRES.length));
+  const itemBiasTrue = items.map(() => (rng() - 0.5) * 1.5);
+  const userBiasTrue = users.map(() => (rng() - 0.5) * 1.0);
+  const GLOBAL = 3.5;
+
+  const ratings = [];
+  for (let k = 0; k < numRatings; k++) {
+    const user = users[Math.floor(rng() * users.length)];
+    const item = items[Math.floor(rng() * items.length)];
+    const genreMatch = items[item.id - 1].genre === GENRES[userAffinity[user.id - 1]] ? 0.6 : 0;
+    const raw = GLOBAL + userBiasTrue[user.id - 1] + itemBiasTrue[item.id - 1] + genreMatch + (rng() - 0.5) * 1.2;
+    const rating = Math.max(1, Math.min(5, Math.round(raw)));
+    ratings.push({ userId: user.id, itemId: item.id, rating });
+  }
+
+  return { users, items, ratings };
+}
+
+// ── Recommender logic ──────────────────────────────────────────────────────
+
+function groupBy(arr, fn) {
+  return arr.reduce((m, x) => { const k = fn(x); (m[k] = m[k] || []).push(x); return m; }, {});
+}
+function avg(arr, fn) {
+  if (!arr || !arr.length) return 0;
+  return arr.reduce((s, x) => s + fn(x), 0) / arr.length;
+}
+
+function popularityRecommend(userId, { items, ratings }) {
+  const byItem = groupBy(ratings, r => r.itemId);
+  const byUser = groupBy(ratings, r => r.userId);
+  const rated  = new Set((byUser[userId] || []).map(r => r.itemId));
+
+  return items
+    .filter(it => (byItem[it.id] || []).length >= 3 && !rated.has(it.id))
+    .map(it => ({
+      item: it,
+      score: avg(byItem[it.id], r => r.rating),
+      count: (byItem[it.id] || []).length
+    }))
+    .sort((a, b) => b.score - a.score || b.count - a.count || a.item.name.localeCompare(b.item.name))
+    .slice(0, 10);
+}
+
+function profileRecommend(userId, { users, items, ratings }) {
+  const byUser    = groupBy(ratings, r => r.userId);
+  const me        = users.find(u => u.id === userId);
+  if (!me) return [];
+
+  const peers = users.filter(u =>
+    u.id !== userId &&
+    u.gender === me.gender &&
+    Math.abs(u.age - me.age) <= 5
+  );
+  const peerIds = new Set(peers.map(u => u.id));
+
+  const peerRatings = ratings.filter(r => peerIds.has(r.userId));
+  const byItem      = groupBy(peerRatings, r => r.itemId);
+  const rated       = new Set((byUser[userId] || []).map(r => r.itemId));
+
+  return items
+    .filter(it => (byItem[it.id] || []).length >= 2 && !rated.has(it.id))
+    .map(it => ({
+      item: it,
+      score: avg(byItem[it.id], r => r.rating),
+      count: (byItem[it.id] || []).length
+    }))
+    .sort((a, b) => b.score - a.score || b.count - a.count || a.item.name.localeCompare(b.item.name))
+    .slice(0, 10);
+}
+
+function similarityRecommend(userId, { users, items, ratings }) {
+  const byUser  = groupBy(ratings, r => r.userId);
+  const byItem  = groupBy(ratings, r => r.itemId);
+  const GLOBAL  = avg(ratings, r => r.rating);
+
+  const itemBias = {};
+  items.forEach(it => {
+    const rs = byItem[it.id] || [];
+    itemBias[it.id] = rs.length ? avg(rs, r => r.rating) - GLOBAL : 0;
+  });
+  const userBias = {};
+  users.forEach(u => {
+    const rs = byUser[u.id] || [];
+    userBias[u.id] = rs.length
+      ? avg(rs, r => r.rating - GLOBAL - (itemBias[r.itemId] || 0))
+      : 0;
+  });
+
+  function bfr(r) { return r.rating - GLOBAL - (itemBias[r.itemId] || 0) - (userBias[r.userId] || 0); }
+
+  function sim(u1, u2) {
+    const r1 = byUser[u1] || [], r2 = byUser[u2] || [];
+    const m2  = new Map(r2.map(r => [r.itemId, r]));
+    const shared = r1.filter(r => m2.has(r.itemId));
+    if (shared.length < 3) return 0;
+    return shared.reduce((s, r) => s + bfr(r) * bfr(m2.get(r.itemId)), 0);
+  }
+
+  const neighbors = users
+    .filter(u => u.id !== userId)
+    .map(u => ({ id: u.id, s: sim(userId, u.id) }))
+    .filter(x => x.s > 0)
+    .sort((a, b) => b.s - a.s)
+    .slice(0, 10)
+    .map(x => x.id);
+
+  const rated = new Set((byUser[userId] || []).map(r => r.itemId));
+
+  const recs = items
+    .filter(it => !rated.has(it.id))
+    .filter(it => neighbors.filter(nId =>
+      (byUser[nId] || []).some(r => r.itemId === it.id)).length >= 2)
+    .map(it => {
+      let ws = 0, ss = 0;
+      neighbors.forEach(nId => {
+        const match = (byUser[nId] || []).find(r => r.itemId === it.id);
+        if (match) { const s = sim(userId, nId); ws += s * bfr(match); ss += s; }
+      });
+      const interaction = ss === 0 ? 0 : ws / ss;
+      const score = GLOBAL + (itemBias[it.id] || 0) + (userBias[userId] || 0) + interaction;
+      return { item: it, score: +score.toFixed(2), count: (byItem[it.id] || []).length };
+    })
+    .sort((a, b) => b.score - a.score || b.count - a.count || a.item.name.localeCompare(b.item.name))
+    .slice(0, 10);
+
+  return { recs, globalBias: GLOBAL, userBias: userBias[userId] || 0, avgItemBias: avg(items, it => Math.abs(itemBias[it.id] || 0)) };
+}
+
+// ── UI ─────────────────────────────────────────────────────────────────────
+
+const ALGO_DESCS = {
+  popularity: 'Recommends items with enough ratings to be statistically significant, sorted by average score. Safe choice for cold-start users — no personalisation needed.',
+  profile:    'Finds users of the same gender and within ±5 years of age, then surfaces items that demographic group rated highly. Simple, interpretable, and bias-free.',
+  similarity: 'Collaborative filtering with bias correction. Computes user similarity as the dot product of bias-free rating vectors. Predicted score = globalBias + itemBias + userBias + weighted neighbour votes.'
+};
+
+let dataset = buildDataset(200);
+let currentAlgo = 'popularity';
+let currentUser = 1;
+
+const userSelect  = document.getElementById('userSelect');
+const userCard    = document.getElementById('userCard');
+const recsList    = document.getElementById('recsList');
+const algoDesc    = document.getElementById('algoDesc');
+const algoBadge   = document.getElementById('algoBadge');
+const biasPanel   = document.getElementById('biasPanel');
+const sizeSlider  = document.getElementById('sizeSlider');
+const sizeLabel   = document.getElementById('sizeLabel');
+
+function populateUsers() {
+  userSelect.innerHTML = '';
+  dataset.users.forEach(u => {
+    const o = document.createElement('option');
+    o.value = u.id;
+    o.textContent = `#${u.id} — ${u.name} (${u.gender}, ${u.age})`;
+    userSelect.appendChild(o);
+  });
+}
+
+function renderUserCard(userId) {
+  const u = dataset.users.find(u => u.id === userId);
+  if (!u) return;
+  const byUser = groupBy(dataset.ratings, r => r.userId);
+  const count  = (byUser[userId] || []).length;
+  userCard.innerHTML = `
+    <span>Name  </span><strong>${u.name}</strong><br>
+    <span>Gender</span><strong>  ${u.gender === 'F' ? '♀ Female' : '♂ Male'}</strong><br>
+    <span>Age   </span><strong>  ${u.age}</strong><br>
+    <span>Ratings </span><strong>${count} items rated</strong>
+  `;
+}
+
+function renderRecs() {
+  recsList.innerHTML = '';
+  algoDesc.textContent = ALGO_DESCS[currentAlgo];
+  algoDesc.dataset.active = currentAlgo;
+  algoBadge.textContent   = currentAlgo;
+  algoBadge.dataset.algo  = currentAlgo;
+  biasPanel.style.display = 'none';
+
+  let recs, maxScore;
+
+  if (currentAlgo === 'popularity') {
+    recs = popularityRecommend(currentUser, dataset);
+    maxScore = 5;
+  } else if (currentAlgo === 'profile') {
+    recs = profileRecommend(currentUser, dataset);
+    maxScore = 5;
+  } else {
+    const result = similarityRecommend(currentUser, dataset);
+    recs = result.recs;
+    maxScore = Math.max(5, ...recs.map(r => r.score));
+
+    biasPanel.style.display = 'block';
+    document.getElementById('bGlobal').textContent = result.globalBias.toFixed(2);
+    const ub = document.getElementById('bUser');
+    ub.textContent = (result.userBias >= 0 ? '+' : '') + result.userBias.toFixed(2);
+    ub.className = 'val ' + (result.userBias > 0.05 ? 'pos' : result.userBias < -0.05 ? 'neg' : 'neu');
+    document.getElementById('bItem').textContent = '±' + result.avgItemBias.toFixed(2);
+  }
+
+  if (!recs || !recs.length) {
+    recsList.innerHTML = '<div class="empty">No recommendations — try a different user or algorithm.</div>';
+    return;
+  }
+
+  recs.forEach((rec, i) => {
+    const pct   = Math.min(1, Math.max(0, rec.score / maxScore));
+    const delay = i * 40;
+    const div   = document.createElement('div');
+    div.className  = 'rec-item';
+    div.style.animationDelay = delay + 'ms';
+    div.innerHTML = `
+      <div class="rank">${i + 1}</div>
+      <div class="item-info">
+        <div class="name">${rec.item.name}</div>
+        <div class="meta">${rec.item.genre} · ${rec.count} ratings</div>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-val">${rec.score.toFixed ? rec.score.toFixed(2) : rec.score}</div>
+        <div class="bar-track">
+          <div class="bar-fill ${currentAlgo}" style="width:${(pct*100).toFixed(1)}%;animation-delay:${delay+200}ms"></div>
+        </div>
+      </div>`;
+    recsList.appendChild(div);
+  });
+}
+
+// events
+userSelect.addEventListener('change', () => {
+  currentUser = +userSelect.value;
+  renderUserCard(currentUser);
+  renderRecs();
+});
+
+document.querySelectorAll('.algo-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.algo-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentAlgo = btn.dataset.algo;
+    renderRecs();
+  });
+});
+
+sizeSlider.addEventListener('input', () => {
+  const n = +sizeSlider.value;
+  sizeLabel.textContent = n;
+  dataset = buildDataset(n);
+  populateUsers();
+  renderUserCard(currentUser);
+  renderRecs();
+});
+
+// init
+populateUsers();
+renderUserCard(currentUser);
+renderRecs();
+</script>
+</body>
+</html>
