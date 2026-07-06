@@ -3,282 +3,636 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>מערכת המלצות — הדגמה חיה</title>
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
+<title>📚 הספרייה החכמה — מנוע המלצות ספרים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f8fcfd;
-    --surface: #ffffff;
-    --border: #d2e4e8;
-    --pop: #ff6b81; /* ורוד שמח */
-    --profile: #1e90ff; /* כחול בהיר */
-    --sim: #2ed573; /* ירוק תוסס */
-    --text: #2f3542;
-    --muted: #747d8c;
-    --card-bg: #ffffff;
-    --shadow: 0 4px 10px rgba(0,0,0,0.05);
+    --bg:        #FBF3E6;
+    --paper:     #FFFCF7;
+    --paper-alt: #FFF6E8;
+    --ink:       #4A3626;
+    --muted:     #9C8768;
+    --border:    #EADFC7;
+    --coral:     #F2A65A;
+    --coral-tint:  rgba(242,166,90,.14);
+    --coral-tint2: rgba(242,166,90,.30);
+    --sage:      #5CA663;
+    --sage-tint:   rgba(92,166,99,.14);
+    --sage-tint2:  rgba(92,166,99,.30);
+    --teal:      #4FA9A2;
+    --teal-tint:   rgba(79,169,162,.14);
+    --teal-tint2:  rgba(79,169,162,.30);
+    --shelf:     #D9C39C;
+    --shadow:    0 4px 16px rgba(122,92,53,.09);
+    --shadow-lg: 0 10px 28px rgba(122,92,53,.14);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
   body {
-    background: var(--bg); color: var(--text);
-    font-family: 'Rubik', sans-serif; font-size: 11px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
     min-height: 100vh;
   }
 
   /* ── header ── */
-  header { padding: 20px 24px 15px; border-bottom: 2px dashed var(--border); background: var(--surface); }
-  h1 { font-size: 24px; font-weight: 700; color: #3742fa; }
-  h1 em { font-style: normal; color: var(--pop); }
-  .subtitle { color: var(--muted); margin-top: 4px; font-size: 10px; font-weight: 500; }
+  header {
+    position: relative;
+    padding: 56px 48px 44px;
+    background:
+      radial-gradient(ellipse 700px 260px at 85% 0%, var(--coral-tint), transparent 65%),
+      radial-gradient(ellipse 600px 240px at 15% 20%, var(--teal-tint), transparent 60%),
+      var(--paper);
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .shelf-strip {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 10px;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--coral) 0 34px,
+      var(--sage) 34px 68px,
+      var(--teal) 68px 102px,
+      #E7D6B0 102px 136px
+    );
+    opacity: .55;
+  }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--coral);
+    background: var(--coral-tint);
+    border: 1px solid var(--coral-tint2);
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 46px;
+    font-weight: 700;
+    line-height: 1.25;
+    max-width: 700px;
+  }
+  h1 em { font-style: normal; color: var(--coral); }
+  .subtitle { color: var(--muted); margin-top: 14px; font-size: 17px; max-width: 560px; }
 
   /* ── layout ── */
-  .shell { display: grid; grid-template-columns: 200px 1fr; min-height: calc(100vh - 60px); }
+  .shell { display: grid; grid-template-columns: 330px 1fr; min-height: calc(100vh - 200px); }
 
   /* ── sidebar ── */
-  .sidebar { border-left: 2px dashed var(--border); padding: 15px; display: flex; flex-direction: column; gap: 15px; background: #f1f8fa; }
-  .label { font-size: 10px; font-weight: 700; color: #57606f; margin-bottom: 5px; }
+  .sidebar {
+    background: var(--paper-alt);
+    border-left: 1px solid var(--border);
+    padding: 36px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  .panel {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+  }
+  .label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .label::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--coral);
+    flex-shrink: 0;
+  }
   select, input[type=range] {
-    width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text);
-    padding: 5px; font-family: inherit; font-size: 11px; border-radius: 6px; outline: none; box-shadow: var(--shadow);
+    width: 100%;
+    background: var(--paper);
+    border: 1.5px solid var(--border);
+    color: var(--ink);
+    padding: 12px 14px;
+    font-family: 'Rubik', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 10px;
+    appearance: none;
+    cursor: pointer;
+    outline: none;
+    transition: border-color .2s;
   }
-  input[type=range] { accent-color: var(--pop); }
+  select:focus, select:hover { border-color: var(--coral); }
+  input[type=range] { padding: 4px 0; accent-color: var(--coral); cursor: pointer; }
 
-  .algo-btns { display: flex; flex-direction: column; gap: 5px; }
+  .algo-btns { display: flex; flex-direction: column; gap: 10px; }
   .algo-btn {
-    padding: 6px 8px; border: 1px solid var(--border); background: var(--surface); color: var(--muted);
-    font-family: inherit; font-size: 10px; font-weight: 500; border-radius: 6px; cursor: pointer; text-align: right;
-    transition: all .2s; box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 16px;
+    border: 1.5px solid var(--border);
+    background: var(--paper);
+    color: var(--muted);
+    font-family: 'Rubik', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: right;
+    transition: all .2s;
   }
-  .algo-btn:hover { border-color: var(--text); }
-  .algo-btn.active[data-algo="popularity"] { color: #fff; border-color: var(--pop); background: var(--pop); }
-  .algo-btn.active[data-algo="profile"]    { color: #fff; border-color: var(--profile); background: var(--profile); }
-  .algo-btn.active[data-algo="similarity"] { color: #fff; border-color: var(--sim); background: var(--sim); }
+  .algo-btn .dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; flex-shrink: 0; opacity: .5; }
+  .algo-btn:hover { border-color: currentColor; }
+  .algo-btn.active[data-algo="popularity"] { color: var(--coral); border-color: var(--coral); background: var(--coral-tint); }
+  .algo-btn.active[data-algo="profile"]    { color: var(--sage);  border-color: var(--sage);  background: var(--sage-tint); }
+  .algo-btn.active[data-algo="similarity"] { color: var(--teal);  border-color: var(--teal);  background: var(--teal-tint); }
+  .algo-btn.active .dot { opacity: 1; }
 
-  .user-card { background: #fff0f5; border: 1px solid #ffd1dc; border-radius: 8px; padding: 10px; line-height: 1.6; box-shadow: var(--shadow); }
+  .user-card { line-height: 2.1; font-size: 15px; }
   .user-card span { color: var(--muted); }
-  .user-card strong { color: var(--text); font-weight: 500; }
+  .user-card strong { color: var(--ink); font-weight: 600; }
 
   /* ── main ── */
-  main { padding: 15px 20px; }
+  main { padding: 40px 44px; }
   .algo-desc {
-    background: #fffbe6; border-right: 4px solid #fbc531; padding: 8px 12px; border-radius: 6px 0 0 6px;
-    color: var(--text); font-size: 11px; margin-bottom: 15px; box-shadow: var(--shadow);
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-right: 4px solid var(--coral);
+    padding: 18px 22px;
+    border-radius: 14px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.8;
+    margin-bottom: 32px;
+    transition: border-color .3s;
+    box-shadow: var(--shadow);
   }
-  .algo-desc[data-active="profile"]    { background: #e0f3ff; border-color: var(--profile); }
-  .algo-desc[data-active="similarity"] { background: #e8fdf0; border-color: var(--sim); }
+  .algo-desc[data-active="profile"]    { border-right-color: var(--sage); }
+  .algo-desc[data-active="similarity"] { border-right-color: var(--teal); }
 
-  .results-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
-  .results-header h2 { font-weight: 700; font-size: 16px; color: #2f3542; }
-  .badge { font-size: 9px; padding: 2px 8px; border-radius: 12px; font-weight: 700; background: #ffeaa7; color: #d63031; }
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 22px;
+  }
+  .results-header h2 { font-family: 'Frank Ruhl Libre', serif; font-weight: 700; font-size: 26px; }
+  .badge {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 16px;
+    border-radius: 20px;
+    background: var(--coral-tint);
+    color: var(--coral);
+    border: 1px solid var(--coral-tint2);
+  }
+  .badge[data-algo="profile"]    { background: var(--sage-tint); color: var(--sage); border-color: var(--sage-tint2); }
+  .badge[data-algo="similarity"] { background: var(--teal-tint); color: var(--teal); border-color: var(--teal-tint2); }
 
-  /* ── recommendation cards ── */
-  .recs { display: flex; flex-direction: column; gap: 6px; }
+  /* ── recommendation cards (book-spine styling) ── */
+  .recs { display: flex; flex-direction: column; gap: 12px; }
   .rec-item {
-    display: grid; grid-template-columns: 20px 1fr auto; align-items: center; gap: 10px;
-    background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px;
-    box-shadow: var(--shadow); opacity: 0; transform: translateY(5px); animation: slideIn .3s forwards;
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    align-items: center;
+    gap: 18px;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-right: 5px solid var(--coral);
+    border-radius: 4px 14px 14px 4px;
+    padding: 16px 20px;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: slideIn .35s forwards;
+    box-shadow: var(--shadow);
+    transition: transform .2s, box-shadow .2s;
   }
+  .rec-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  .rec-item.profile    { border-right-color: var(--sage); }
+  .rec-item.similarity { border-right-color: var(--teal); }
   @keyframes slideIn { to { opacity: 1; transform: none; } }
-  .rank { font-size: 14px; font-weight: 700; color: #a4b0be; }
-  .item-info .name { font-size: 11px; font-weight: 500; }
-  .item-info .meta { font-size: 9px; color: var(--muted); }
-  .score-bar-wrap { display: flex; align-items: center; gap: 8px; }
-  .score-val { font-size: 11px; font-weight: 700; width: 25px; text-align: left; }
-  .bar-track { width: 60px; height: 6px; background: #dfe4ea; border-radius: 3px; overflow: hidden; }
-  .bar-fill { height: 100%; background: var(--pop); border-radius: 3px; transform-origin: right; animation: growBar .5s ease forwards; }
+  .rank { font-size: 22px; font-family: 'Frank Ruhl Libre', serif; font-weight: 700; color: var(--muted); text-align: center; }
+  .item-info .name { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+  .item-info .meta { font-size: 13.5px; color: var(--muted); }
+  .score-bar-wrap { display: flex; align-items: center; gap: 12px; }
+  .score-val { font-size: 16px; font-weight: 700; width: 40px; text-align: center; }
+  .bar-track { width: 110px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .bar-fill {
+    height: 100%;
+    background: var(--coral);
+    border-radius: 3px;
+    transform-origin: right;
+    animation: growBar .5s ease forwards;
+  }
   @keyframes growBar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-  .bar-fill.profile    { background: var(--profile); }
-  .bar-fill.similarity { background: var(--sim); }
+  .bar-fill.profile    { background: var(--sage); }
+  .bar-fill.similarity { background: var(--teal); }
 
   /* ── bias panel ── */
-  .bias-panel { margin-top: 15px; padding-top: 15px; border-top: 2px dashed var(--border); }
-  .bias-panel h3 { font-weight: 500; font-size: 13px; margin-bottom: 10px; color: #3742fa; }
-  .bias-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .bias-box { background: #f1f2f6; border-radius: 8px; padding: 8px; text-align: center; box-shadow: var(--shadow); }
-  .bias-box .key  { font-size: 9px; color: var(--muted); margin-bottom: 4px; font-weight: 700; }
-  .bias-box .val  { font-size: 14px; font-weight: 700; }
-  .bias-box .val.pos { color: var(--sim); }
-  .bias-box .val.neg { color: var(--pop); }
-  .bias-box .val.neu { color: var(--profile); }
+  .bias-panel {
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 1px dashed var(--border);
+  }
+  .bias-panel h3 { font-family: 'Frank Ruhl Libre', serif; font-weight: 700; font-size: 20px; margin-bottom: 18px; }
+  .bias-panel h3 span { color: var(--muted); font-size: 14px; font-family: 'Rubik'; font-weight: 400; }
+  .bias-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .bias-box {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+  }
+  .bias-box .key  { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+  .bias-box .val  { font-size: 26px; font-family: 'Frank Ruhl Libre', serif; font-weight: 700; }
+  .bias-box .val.pos { color: var(--teal); }
+  .bias-box .val.neg { color: var(--sage); }
+  .bias-box .val.neu { color: var(--coral); }
 
-  .empty { color: var(--muted); padding: 20px 0; text-align: center; font-size: 11px; }
+  /* ── empty ── */
+  .empty { color: var(--muted); padding: 48px 0; text-align: center; font-size: 16px; }
+
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { border-left: none; border-bottom: 1px solid var(--border); }
+    header { padding: 40px 24px; }
+    h1 { font-size: 34px; }
+    main { padding: 28px 20px; }
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>מערכת <em>המלצות</em></h1>
-  <p class="subtitle">הדגמה אינטראקטיבית קומפקטית • לוגיקה זהה למקור</p>
+  <span class="eyebrow">📖 מנוע המלצות חי</span>
+  <h1>תמצאו את <em>הספר הבא</em> שתאהבו</h1>
+  <p class="subtitle">הצצה אל מאחורי הקלעים של מנוע המלצות ספרים — שלושה אלגוריתמים, אותם קוראים, תוצאות שונות לגמרי.</p>
+  <div class="shelf-strip"></div>
 </header>
 
 <div class="shell">
   <aside class="sidebar">
-    <div>
-      <div class="label">בחר משתמש</div>
+    <div class="panel">
+      <div class="label">בחירת קוראה / קורא</div>
       <select id="userSelect"></select>
     </div>
 
-    <div id="userCardWrap">
-      <div class="label">פרופיל משתמש</div>
+    <div class="panel" id="userCardWrap">
+      <div class="label">פרופיל הקורא</div>
       <div class="user-card" id="userCard"></div>
     </div>
 
     <div>
-      <div class="label">אלגוריתם</div>
+      <div class="label">אלגוריתם המלצה</div>
       <div class="algo-btns">
-        <button class="algo-btn active" data-algo="popularity">⭐ מבוסס פופולריות</button>
-        <button class="algo-btn" data-algo="profile">👤 מבוסס קבוצת גיל/מין</button>
-        <button class="algo-btn" data-algo="similarity">🔗 סינון שיתופי (CF)</button>
+        <button class="algo-btn active" data-algo="popularity"><span class="dot"></span> פופולריות — רבי המכר</button>
+        <button class="algo-btn" data-algo="profile"><span class="dot"></span> פרופיל קוראים דומים</button>
+        <button class="algo-btn" data-algo="similarity"><span class="dot"></span> סינון שיתופי (דמיון קוראים)</button>
       </div>
     </div>
 
-    <div>
-      <div class="label">גודל מאגר — <span id="sizeLabel">200</span> דירוגים</div>
+    <div class="panel">
+      <div class="label">גודל מאגר הנתונים — <span id="sizeLabel">200</span> דירוגים</div>
       <input type="range" id="sizeSlider" min="50" max="500" step="50" value="200">
     </div>
   </aside>
 
   <main>
-    <div class="algo-desc" id="algoDesc" data-active="popularity"></div>
+    <div class="algo-desc" id="algoDesc" data-active="popularity">
+      ממליצה על ספרים עם מספיק דירוגים כדי להיות מובהקים סטטיסטית, ממוינים לפי הציון הממוצע. בחירה בטוחה לקוראים חדשים — בלי צורך בהתאמה אישית.
+    </div>
 
     <div class="results-header">
       <h2>10 ההמלצות המובילות</h2>
-      <span class="badge" id="algoBadge" data-algo="popularity">popularity</span>
+      <span class="badge" id="algoBadge" data-algo="popularity">פופולריות</span>
     </div>
 
     <div class="recs" id="recsList"></div>
 
     <div class="bias-panel" id="biasPanel" style="display:none">
-      <h3>פירוק הטיות (CF)</h3>
+      <h3>פירוק הטיות <span>(סינון שיתופי בלבד)</span></h3>
       <div class="bias-grid">
         <div class="bias-box"><div class="key">הטיה גלובלית</div><div class="val neu" id="bGlobal">—</div></div>
-        <div class="bias-box"><div class="key">הטיית משתמש</div><div class="val" id="bUser">—</div></div>
-        <div class="bias-box"><div class="key">ממוצע הטיית פריט</div><div class="val" id="bItem">—</div></div>
+        <div class="bias-box"><div class="key">הטיית קורא</div><div class="val" id="bUser">—</div></div>
+        <div class="bias-box"><div class="key">הטיית ספר ממוצעת</div><div class="val" id="bItem">—</div></div>
       </div>
     </div>
   </main>
 </div>
 
 <script>
-const GENRES = ['מדע בדיוני','דרמה','קומדיה','מותחן','רומנטיקה','אקשן','דוקומנטרי','פנטזיה','אימה','אנימציה'];
-const NAMES_M = ['אמיר','רותם','יואב','ניר','איתן','עומר','גיא','טל','דן','ליאור'];
-const NAMES_F = ['מאיה','נועה','שירה','הילה','טלי','רעות','גל','יעל','דנה','מיכל'];
-const ITEM_TITLES = ['סודות באפלה','האופק האחרון','רסיסי עבר','עיר של חול','פריחה שניה','שעון החול','קצה המחר','גן שקט','נקודת שבירה','אנומליה כחולה','סחף מסוכן','ממלכת נייר','עונה בוערת','סערה שקטה','קוד סודי','חוט הזהב','תדר אבוד','גשר רפאים','פרוטוקול עתיד','פעימת ניאון','מצפן שבור','מבוך קריסטל','גאות כסופה','העולם המוכר','אפקט השרשרת','מעגל פתוח','סטטיקה פראית','כוכב רחוק','שירת הים','צל הרים'];
+// ── Synthetic data generation ──────────────────────────────────────────────
 
-let rng = seed => () => { seed ^= seed<<13; seed ^= seed>>17; seed ^= seed<<5; return (seed>>>0)/4294967296; };
+const GENRES  = ['רומן','מותחן','ביוגרפיה','פנטזיה','שירה','עיון','קלאסיקה','נוער','היסטוריה','קומדיה'];
+const NAMES_M = ['עמיר','רותם','יואב','ניר','איתן','עומר','גיא','טל','דן','ליאור'];
+const NAMES_F = ['מאיה','נועה','שירה','הילה','טלי','רעות','גל','יעל','דנה','מיכל'];
+const ITEM_TITLES = [
+  'סיפור על אהבה וחושך','קופסה שחורה','מיכאל שלי','לדעת אישה','סוס אחד נכנס לבר',
+  'עיין ערך אהבה','אישה בורחת מבשורה','ספר הדקדוק הפנימי','רומן רוסי','דבש אריות',
+  'יונה ונער','עשו','געגועיי לקיסינג\'ר','פתאום דפיקה בדלת','שבע שנים טובות',
+  'xxx xxxx','נערה כלה','דולי סיטי','ארבעה בתים וגעגוע','המומלץ',
+  'נאורות','קול צעדינו','באדנהיים עיר נופש','נוצות','ימי צקלג',
+  'זכרון דברים','תמול שלשום','שירה','אורח נטה ללון','חסות'
+];
+
+let rng = (seed => {
+  return () => { seed ^= seed << 13; seed ^= seed >> 17; seed ^= seed << 5; return (seed >>> 0) / 4294967296; };
+})(42);
 
 function buildDataset(numRatings) {
-  let rand = rng(42);
+  rng = (seed => {
+    return () => { seed ^= seed << 13; seed ^= seed >> 17; seed ^= seed << 5; return (seed >>> 0) / 4294967296; };
+  })(42);
+
   const users = Array.from({length: 20}, (_, i) => ({
-    id: i+1, name: i%2===0 ? NAMES_F[Math.floor(i/2)%10] : NAMES_M[Math.floor(i/2)%10],
-    gender: i%2===0 ? 'F':'M', age: 18+Math.floor(rand()*45)
+    id: i + 1,
+    name: i % 2 === 0 ? NAMES_F[Math.floor(i/2) % 10] : NAMES_M[Math.floor(i/2) % 10],
+    gender: i % 2 === 0 ? 'F' : 'M',
+    age: 18 + Math.floor(rng() * 45)
   }));
-  const items = ITEM_TITLES.map((t, i) => ({ id: i+1, name: t, genre: GENRES[i%GENRES.length] }));
-  const userAff = users.map(() => Math.floor(rand()*GENRES.length));
-  const itemBias = items.map(() => (rand()-0.5)*1.5), userBias = users.map(() => (rand()-0.5)*1.0);
-  
+
+  const items = ITEM_TITLES.map((title, i) => ({
+    id: i + 1,
+    name: title,
+    genre: GENRES[i % GENRES.length]
+  }));
+
+  // Each user has a genre affinity
+  const userAffinity = users.map(() => Math.floor(rng() * GENRES.length));
+  const itemBiasTrue = items.map(() => (rng() - 0.5) * 1.5);
+  const userBiasTrue = users.map(() => (rng() - 0.5) * 1.0);
+  const GLOBAL = 3.5;
+
   const ratings = [];
-  for (let k=0; k<numRatings; k++) {
-    const u = users[Math.floor(rand()*users.length)], i = items[Math.floor(rand()*items.length)];
-    const match = i.genre === GENRES[userAff[u.id-1]] ? 0.6 : 0;
-    const raw = 3.5 + userBias[u.id-1] + itemBias[i.id-1] + match + (rand()-0.5)*1.2;
-    ratings.push({ userId: u.id, itemId: i.id, rating: Math.max(1, Math.min(5, Math.round(raw))) });
+  for (let k = 0; k < numRatings; k++) {
+    const user = users[Math.floor(rng() * users.length)];
+    const item = items[Math.floor(rng() * items.length)];
+    const genreMatch = items[item.id - 1].genre === GENRES[userAffinity[user.id - 1]] ? 0.6 : 0;
+    const raw = GLOBAL + userBiasTrue[user.id - 1] + itemBiasTrue[item.id - 1] + genreMatch + (rng() - 0.5) * 1.2;
+    const rating = Math.max(1, Math.min(5, Math.round(raw)));
+    ratings.push({ userId: user.id, itemId: item.id, rating });
   }
+
   return { users, items, ratings };
 }
 
-const groupBy = (arr, fn) => arr.reduce((m, x) => { const k = fn(x); (m[k]=m[k]||[]).push(x); return m; }, {});
-const avg = (arr, fn) => arr?.length ? arr.reduce((s, x) => s+fn(x), 0)/arr.length : 0;
+// ── Recommender logic ──────────────────────────────────────────────────────
 
-function popularityRecommend(userId, {items, ratings}) {
-  const byItem = groupBy(ratings, r=>r.itemId), rated = new Set(ratings.filter(r=>r.userId===userId).map(r=>r.itemId));
-  return items.filter(it => (byItem[it.id]||[]).length >= 3 && !rated.has(it.id))
-    .map(it => ({ item: it, score: avg(byItem[it.id], r=>r.rating), count: (byItem[it.id]||[]).length }))
-    .sort((a,b) => b.score-a.score || b.count-a.count).slice(0, 10);
+function groupBy(arr, fn) {
+  return arr.reduce((m, x) => { const k = fn(x); (m[k] = m[k] || []).push(x); return m; }, {});
+}
+function avg(arr, fn) {
+  if (!arr || !arr.length) return 0;
+  return arr.reduce((s, x) => s + fn(x), 0) / arr.length;
 }
 
-function profileRecommend(userId, {users, items, ratings}) {
-  const me = users.find(u=>u.id===userId), rated = new Set(ratings.filter(r=>r.userId===userId).map(r=>r.itemId));
-  const peers = new Set(users.filter(u => u.id!==userId && u.gender===me.gender && Math.abs(u.age-me.age)<=5).map(u=>u.id));
-  const byItem = groupBy(ratings.filter(r=>peers.has(r.userId)), r=>r.itemId);
-  return items.filter(it => (byItem[it.id]||[]).length >= 2 && !rated.has(it.id))
-    .map(it => ({ item: it, score: avg(byItem[it.id], r=>r.rating), count: (byItem[it.id]||[]).length }))
-    .sort((a,b) => b.score-a.score || b.count-a.count).slice(0, 10);
+function popularityRecommend(userId, { items, ratings }) {
+  const byItem = groupBy(ratings, r => r.itemId);
+  const byUser = groupBy(ratings, r => r.userId);
+  const rated  = new Set((byUser[userId] || []).map(r => r.itemId));
+
+  return items
+    .filter(it => (byItem[it.id] || []).length >= 3 && !rated.has(it.id))
+    .map(it => ({
+      item: it,
+      score: avg(byItem[it.id], r => r.rating),
+      count: (byItem[it.id] || []).length
+    }))
+    .sort((a, b) => b.score - a.score || b.count - a.count || a.item.name.localeCompare(b.item.name))
+    .slice(0, 10);
 }
 
-function similarityRecommend(userId, {users, items, ratings}) {
-  const byUser = groupBy(ratings, r=>r.userId), byItem = groupBy(ratings, r=>r.itemId), gl = avg(ratings, r=>r.rating);
-  const ib = {}, ub = {};
-  items.forEach(it => ib[it.id] = (byItem[it.id]||[]).length ? avg(byItem[it.id], r=>r.rating)-gl : 0);
-  users.forEach(u => ub[u.id] = (byUser[u.id]||[]).length ? avg(byUser[u.id], r=>r.rating-gl-(ib[r.itemId]||0)) : 0);
-  const bfr = r => r.rating - gl - (ib[r.itemId]||0) - (ub[r.userId]||0);
-  
-  const sim = (u1, u2) => {
-    const m2 = new Map((byUser[u2]||[]).map(r=>[r.itemId, r]));
-    const shared = (byUser[u1]||[]).filter(r=>m2.has(r.itemId));
-    return shared.length<3 ? 0 : shared.reduce((s, r) => s+bfr(r)*bfr(m2.get(r.itemId)), 0);
-  };
+function profileRecommend(userId, { users, items, ratings }) {
+  const byUser    = groupBy(ratings, r => r.userId);
+  const me        = users.find(u => u.id === userId);
+  if (!me) return [];
 
-  const neighbors = users.filter(u=>u.id!==userId).map(u=>({id:u.id, s:sim(userId, u.id)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,10);
-  const rated = new Set((byUser[userId]||[]).map(r=>r.itemId));
+  const peers = users.filter(u =>
+    u.id !== userId &&
+    u.gender === me.gender &&
+    Math.abs(u.age - me.age) <= 5
+  );
+  const peerIds = new Set(peers.map(u => u.id));
 
-  const recs = items.filter(it=>!rated.has(it.id) && neighbors.filter(n=>(byUser[n.id]||[]).some(r=>r.itemId===it.id)).length>=2).map(it => {
-    let ws=0, ss=0;
-    neighbors.forEach(n => { const m=(byUser[n.id]||[]).find(r=>r.itemId===it.id); if(m){ws+=n.s*bfr(m); ss+=n.s;} });
-    return { item: it, score: +(gl+(ib[it.id]||0)+(ub[userId]||0)+(ss?ws/ss:0)).toFixed(2), count: (byItem[it.id]||[]).length };
-  }).sort((a,b) => b.score-a.score || b.count-a.count).slice(0, 10);
-  
-  return { recs, globalBias: gl, userBias: ub[userId]||0, avgItemBias: avg(items, it=>Math.abs(ib[it.id]||0)) };
+  const peerRatings = ratings.filter(r => peerIds.has(r.userId));
+  const byItem      = groupBy(peerRatings, r => r.itemId);
+  const rated       = new Set((byUser[userId] || []).map(r => r.itemId));
+
+  return items
+    .filter(it => (byItem[it.id] || []).length >= 2 && !rated.has(it.id))
+    .map(it => ({
+      item: it,
+      score: avg(byItem[it.id], r => r.rating),
+      count: (byItem[it.id] || []).length
+    }))
+    .sort((a, b) => b.score - a.score || b.count - a.count || a.item.name.localeCompare(b.item.name))
+    .slice(0, 10);
 }
 
-const ALGO_DESCS = {
-  popularity: 'ממליץ על פריטים עם מספיק דירוגים, ממוינים לפי ציון ממוצע. בחירה בטוחה למשתמשים חדשים.',
-  profile: 'מוצא משתמשים באותו מין ובטווח של ±5 שנים, וממליץ על פריטים שהם אהבו. פשוט וללא הטיות.',
-  similarity: 'סינון שיתופי מתקדם. מחשב דמיון בין משתמשים כווקטור ומנבא ציון לפי הטיות משתמש ופריט.'
-};
+function similarityRecommend(userId, { users, items, ratings }) {
+  const byUser  = groupBy(ratings, r => r.userId);
+  const byItem  = groupBy(ratings, r => r.itemId);
+  const GLOBAL  = avg(ratings, r => r.rating);
 
-let dataset = buildDataset(200), currentAlgo = 'popularity', currentUser = 1;
-const DOM = { sel:id=>document.getElementById(id), q:s=>document.querySelectorAll(s) };
+  const itemBias = {};
+  items.forEach(it => {
+    const rs = byItem[it.id] || [];
+    itemBias[it.id] = rs.length ? avg(rs, r => r.rating) - GLOBAL : 0;
+  });
+  const userBias = {};
+  users.forEach(u => {
+    const rs = byUser[u.id] || [];
+    userBias[u.id] = rs.length
+      ? avg(rs, r => r.rating - GLOBAL - (itemBias[r.itemId] || 0))
+      : 0;
+  });
 
-function init() {
-  DOM.sel('userSelect').innerHTML = dataset.users.map(u=>`<option value="${u.id}">${u.name} (${u.gender==='F'?'נ':'ז'}, ${u.age})</option>`).join('');
-  render();
-}
+  function bfr(r) { return r.rating - GLOBAL - (itemBias[r.itemId] || 0) - (userBias[r.userId] || 0); }
 
-function render() {
-  const u = dataset.users.find(u=>u.id===currentUser), count = (dataset.ratings.filter(r=>r.userId===currentUser)).length;
-  DOM.sel('userCard').innerHTML = `<span>שם: </span><strong>${u.name}</strong><br><span>מין: </span><strong>${u.gender==='F'?'♀ נקבה':'♂ זכר'}</strong><br><span>גיל: </span><strong>${u.age}</strong><br><span>דירוגים: </span><strong>${count}</strong>`;
-  DOM.sel('algoDesc').textContent = ALGO_DESCS[currentAlgo];
-  DOM.sel('algoDesc').dataset.active = DOM.sel('algoBadge').dataset.algo = currentAlgo;
-  DOM.sel('algoBadge').textContent = currentAlgo;
-  DOM.sel('biasPanel').style.display = 'none';
-
-  let recs, mS=5;
-  if(currentAlgo==='popularity') recs = popularityRecommend(currentUser, dataset);
-  else if(currentAlgo==='profile') recs = profileRecommend(currentUser, dataset);
-  else {
-    const res = similarityRecommend(currentUser, dataset); recs = res.recs; mS = Math.max(5, ...recs.map(r=>r.score));
-    DOM.sel('biasPanel').style.display = 'block';
-    DOM.sel('bGlobal').textContent = res.globalBias.toFixed(2);
-    const ub = DOM.sel('bUser'); ub.textContent = (res.userBias>=0?'+':'')+res.userBias.toFixed(2);
-    ub.className = 'val '+(res.userBias>0.05?'pos':res.userBias<-0.05?'neg':'neu');
-    DOM.sel('bItem').textContent = '±'+res.avgItemBias.toFixed(2);
+  function sim(u1, u2) {
+    const r1 = byUser[u1] || [], r2 = byUser[u2] || [];
+    const m2  = new Map(r2.map(r => [r.itemId, r]));
+    const shared = r1.filter(r => m2.has(r.itemId));
+    if (shared.length < 3) return 0;
+    return shared.reduce((s, r) => s + bfr(r) * bfr(m2.get(r.itemId)), 0);
   }
 
-  DOM.sel('recsList').innerHTML = recs.length ? recs.map((r,i) => `
-    <div class="rec-item" style="animation-delay:${i*30}ms">
-      <div class="rank">${i+1}</div>
-      <div class="item-info"><div class="name">${r.item.name}</div><div class="meta">${r.item.genre} • ${r.count} דירוגים</div></div>
-      <div class="score-bar-wrap"><div class="score-val">${r.score.toFixed?r.score.toFixed(2):r.score}</div>
-      <div class="bar-track"><div class="bar-fill ${currentAlgo}" style="width:${Math.min(100,(r.score/mS)*100)}%;animation-delay:${i*30+150}ms"></div></div></div>
-    </div>`).join('') : '<div class="empty">אין המלצות — נסה משתמש או אלגוריתם אחר.</div>';
+  const neighbors = users
+    .filter(u => u.id !== userId)
+    .map(u => ({ id: u.id, s: sim(userId, u.id) }))
+    .filter(x => x.s > 0)
+    .sort((a, b) => b.s - a.s)
+    .slice(0, 10)
+    .map(x => x.id);
+
+  const rated = new Set((byUser[userId] || []).map(r => r.itemId));
+
+  const recs = items
+    .filter(it => !rated.has(it.id))
+    .filter(it => neighbors.filter(nId =>
+      (byUser[nId] || []).some(r => r.itemId === it.id)).length >= 2)
+    .map(it => {
+      let ws = 0, ss = 0;
+      neighbors.forEach(nId => {
+        const match = (byUser[nId] || []).find(r => r.itemId === it.id);
+        if (match) { const s = sim(userId, nId); ws += s * bfr(match); ss += s; }
+      });
+      const interaction = ss === 0 ? 0 : ws / ss;
+      const score = GLOBAL + (itemBias[it.id] || 0) + (userBias[userId] || 0) + interaction;
+      return { item: it, score: +score.toFixed(2), count: (byItem[it.id] || []).length };
+    })
+    .sort((a, b) => b.score - a.score || b.count - a.count || a.item.name.localeCompare(b.item.name))
+    .slice(0, 10);
+
+  return { recs, globalBias: GLOBAL, userBias: userBias[userId] || 0, avgItemBias: avg(items, it => Math.abs(itemBias[it.id] || 0)) };
 }
 
-DOM.sel('userSelect').addEventListener('change', e=>{ currentUser = +e.target.value; render(); });
-DOM.q('.algo-btn').forEach(b=>b.addEventListener('click', ()=>{ DOM.q('.algo-btn').forEach(btn=>btn.classList.remove('active')); b.classList.add('active'); currentAlgo=b.dataset.algo; render(); }));
-DOM.sel('sizeSlider').addEventListener('input', e=>{ DOM.sel('sizeLabel').textContent=e.target.value; dataset=buildDataset(+e.target.value); init(); });
+// ── UI ─────────────────────────────────────────────────────────────────────
 
-init();
-</script>
+const ALGO_DESCS = {
+  popularity: 'ממליצה על ספרים עם מספיק דירוגים כדי להיות מובהקים סטטיסטית, ממוינים לפי הציון הממוצע. בחירה בטוחה לקוראים חדשים — בלי צורך בהתאמה אישית.',
+  profile:    'מאתרת קוראים מאותו מגדר ובטווח גיל של עד 5 שנים, ומעלה ספרים שהקבוצה הזו אהבה. שיטה פשוטה, קלה להסבר וללא הטיה.',
+  similarity: 'סינון שיתופי עם תיקון הטיות. מחשבת דמיון בין קוראים כמכפלה פנימית של וקטורי דירוג נטולי הטיה. הציון החזוי = הטיה גלובלית + הטיית ספר + הטיית קורא + הצבעות שכנים משוקללות.'
+};
+
+let dataset = buildDataset(200);
+let currentAlgo = 'popularity';
+let currentUser = 1;
+
+const userSelect  = document.getElementById('userSelect');
+const userCard    = document.getElementById('userCard');
+const recsList    = document.getElementById('recsList');
+const algoDesc    = document.getElementById('algoDesc');
+const algoBadge   = document.getElementById('algoBadge');
+const biasPanel   = document.getElementById('biasPanel');
+const sizeSlider  = document.getElementById('sizeSlider');
+const sizeLabel   = document.getElementById('sizeLabel');
+
+const ALGO_LABELS = { popularity: 'פופולריות', profile: 'פרופיל', similarity: 'דמיון' };
+
+function populateUsers() {
+  userSelect.innerHTML = '';
+  dataset.users.forEach(u => {
+    const o = document.createElement('option');
+    o.value = u.id;
+    o.textContent = `#${u.id} — ${u.name} (${u.gender === 'F' ? 'נקבה' : 'זכר'}, גיל ${u.age})`;
+    userSelect.appendChild(o);
+  });
+}
+
+function renderUserCard(userId) {
+  const u = dataset.users.find(u => u.id === userId);
+  if (!u) return;
+  const byUser = groupBy(dataset.ratings, r => r.userId);
+  const count  = (byUser[userId] || []).length;
+  userCard.innerHTML = `
+    <span>שם: </span><strong>${u.name}</strong><br>
+    <span>מגדר: </span><strong>${u.gender === 'F' ? '♀ נקבה' : '♂ זכר'}</strong><br>
+    <span>גיל: </span><strong>${u.age}</strong><br>
+    <span>דירוגים: </span><strong>${count} ספרים דורגו</strong>
+  `;
+}
+
+function renderRecs() {
+  recsList.innerHTML = '';
+  algoDesc.textContent = ALGO_DESCS[currentAlgo];
+  algoDesc.dataset.active = currentAlgo;
+  algoBadge.textContent   = ALGO_LABELS[currentAlgo];
+  algoBadge.dataset.algo  = currentAlgo;
+  biasPanel.style.display = 'none';
+
+  let recs, maxScore;
+
+  if (currentAlgo === 'popularity') {
+    recs = popularityRecommend(currentUser, dataset);
+    maxScore = 5;
+  } else if (currentAlgo === 'profile') {
+    recs = profileRecommend(currentUser, dataset);
+    maxScore = 5;
+  } else {
+    const result = similarityRecommend(currentUser, dataset);
+    recs = result.recs;
+    maxScore = Math.max(5, ...recs.map(r => r.score));
+
+    biasPanel.style.display = 'block';
+    document.getElementById('bGlobal').textContent = result.globalBias.toFixed(2);
+    const ub = document.getElementById('bUser');
+    ub.textContent = (result.userBias >= 0 ? '+' : '') + result.userBias.toFixed(2);
+    ub.className = 'val ' + (result.userBias > 0.05 ? 'pos' : result.userBias < -0.05 ? 'neg' : 'neu');
+    document.getElementById('bItem').textContent = '±' + result.avgItemBias.toFixed(2);
+  }
+
+  if (!recs || !recs.length) {
+    recsList.innerHTML = '<div class="empty">אין המלצות — נסו קוראה/קורא אחר או אלגוריתם אחר.</div>';
+    return;
+  }
+
+  recs.forEach((rec, i) => {
+    const pct   = Math.min(1, Math.max(0, rec.score / maxScore));
+    const delay = i * 40;
+    const div   = document.createElement('div');
+    div.className  = 'rec-item ' + currentAlgo;
+    div.style.animationDelay = delay + 'ms';
+    div.innerHTML = `
+      <div class="rank">${i + 1}</div>
+      <div class="item-info">
+        <div class="name">${rec.item.name}</div>
+        <div class="meta">${rec.item.genre} · ${rec.count} דירוגים</div>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-val">${rec.score.toFixed ? rec.score.toFixed(2) : rec.score}</div>
+        <div class="bar-track">
+          <div class="bar-fill ${currentAlgo}" style="width:${(pct*100).toFixed(1)}%;animation-delay:${delay+200}ms"></div>
+        </div>
+      </div>`;
+    recsList.appendChild(div);
+  });
+}
+
+// events
+userSelect.addEventListener('change', () => {
+  currentUser = +userSelect.value;
+  renderUserCard(currentUser);
+  renderRecs();
+});
+
+document.querySelectorAll('.algo-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.algo-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentAlgo = btn.dataset.algo;
+    renderRecs();
+  });
+});
+
+sizeSlider.addEventListener('input', () => {
+  const n = +sizeSlider.value;
+  sizeLabel.textContent = n;
+  dataset = buildDataset(n);
+  populateUsers();
+  renderUserCard(currentUser);
+  renderRecs();
+});
+
+// init
+populateUsers();
+renderUserCard(currentUser);
+renderRecs();
+       </script>
 </body>
 </html>
