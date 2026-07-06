@@ -1,548 +1,284 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Recommender System — Live Demo</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&display=swap" rel="stylesheet">
+<title>מערכת המלצות — הדגמה חיה</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:       #0d0f14;
-    --surface:  #151820;
-    --border:   #252a36;
-    --pop:      #c8f060;
-    --profile:  #60c8f0;
-    --sim:      #f06090;
-    --text:     #e8eaf0;
-    --muted:    #5a6080;
-    --card-bg:  #1a1e2a;
+    --bg: #f8fcfd;
+    --surface: #ffffff;
+    --border: #d2e4e8;
+    --pop: #ff6b81; /* ורוד שמח */
+    --profile: #1e90ff; /* כחול בהיר */
+    --sim: #2ed573; /* ירוק תוסס */
+    --text: #2f3542;
+    --muted: #747d8c;
+    --card-bg: #ffffff;
+    --shadow: 0 4px 10px rgba(0,0,0,0.05);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
+    background: var(--bg); color: var(--text);
+    font-family: 'Rubik', sans-serif; font-size: 11px;
     min-height: 100vh;
   }
 
   /* ── header ── */
-  header {
-    padding: 48px 48px 32px;
-    border-bottom: 1px solid var(--border);
-  }
-  h1 {
-    font-family: 'Fraunces', serif;
-    font-size: 38px;
-    font-weight: 300;
-    letter-spacing: -1px;
-    line-height: 1.1;
-  }
-  h1 em { font-style: italic; color: var(--pop); }
-  .subtitle { color: var(--muted); margin-top: 8px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+  header { padding: 20px 24px 15px; border-bottom: 2px dashed var(--border); background: var(--surface); }
+  h1 { font-size: 24px; font-weight: 700; color: #3742fa; }
+  h1 em { font-style: normal; color: var(--pop); }
+  .subtitle { color: var(--muted); margin-top: 4px; font-size: 10px; font-weight: 500; }
 
   /* ── layout ── */
-  .shell { display: grid; grid-template-columns: 300px 1fr; min-height: calc(100vh - 120px); }
+  .shell { display: grid; grid-template-columns: 200px 1fr; min-height: calc(100vh - 60px); }
 
   /* ── sidebar ── */
-  .sidebar {
-    border-right: 1px solid var(--border);
-    padding: 32px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-  }
-  .label { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .sidebar { border-left: 2px dashed var(--border); padding: 15px; display: flex; flex-direction: column; gap: 15px; background: #f1f8fa; }
+  .label { font-size: 10px; font-weight: 700; color: #57606f; margin-bottom: 5px; }
   select, input[type=range] {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 8px 12px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    border-radius: 4px;
-    appearance: none;
-    cursor: pointer;
-    outline: none;
-    transition: border-color .2s;
+    width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    padding: 5px; font-family: inherit; font-size: 11px; border-radius: 6px; outline: none; box-shadow: var(--shadow);
   }
-  select:focus, select:hover { border-color: var(--pop); }
-  input[type=range] { padding: 4px 0; accent-color: var(--pop); }
+  input[type=range] { accent-color: var(--pop); }
 
-  .algo-btns { display: flex; flex-direction: column; gap: 8px; }
+  .algo-btns { display: flex; flex-direction: column; gap: 5px; }
   .algo-btn {
-    padding: 10px 14px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    text-align: left;
-    transition: all .2s;
+    padding: 6px 8px; border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+    font-family: inherit; font-size: 10px; font-weight: 500; border-radius: 6px; cursor: pointer; text-align: right;
+    transition: all .2s; box-shadow: var(--shadow);
   }
-  .algo-btn:hover { border-color: currentColor; }
-  .algo-btn.active[data-algo="popularity"] { color: var(--pop); border-color: var(--pop); background: rgba(200,240,96,.07); }
-  .algo-btn.active[data-algo="profile"]    { color: var(--profile); border-color: var(--profile); background: rgba(96,200,240,.07); }
-  .algo-btn.active[data-algo="similarity"] { color: var(--sim); border-color: var(--sim); background: rgba(240,96,144,.07); }
+  .algo-btn:hover { border-color: var(--text); }
+  .algo-btn.active[data-algo="popularity"] { color: #fff; border-color: var(--pop); background: var(--pop); }
+  .algo-btn.active[data-algo="profile"]    { color: #fff; border-color: var(--profile); background: var(--profile); }
+  .algo-btn.active[data-algo="similarity"] { color: #fff; border-color: var(--sim); background: var(--sim); }
 
-  .user-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 14px;
-    line-height: 1.8;
-  }
+  .user-card { background: #fff0f5; border: 1px solid #ffd1dc; border-radius: 8px; padding: 10px; line-height: 1.6; box-shadow: var(--shadow); }
   .user-card span { color: var(--muted); }
-  .user-card strong { color: var(--text); }
+  .user-card strong { color: var(--text); font-weight: 500; }
 
   /* ── main ── */
-  main { padding: 32px 40px; }
+  main { padding: 15px 20px; }
   .algo-desc {
-    background: var(--card-bg);
-    border-left: 3px solid var(--pop);
-    padding: 14px 18px;
-    border-radius: 0 6px 6px 0;
-    color: var(--muted);
-    font-size: 12px;
-    line-height: 1.7;
-    margin-bottom: 28px;
-    transition: border-color .3s;
+    background: #fffbe6; border-right: 4px solid #fbc531; padding: 8px 12px; border-radius: 6px 0 0 6px;
+    color: var(--text); font-size: 11px; margin-bottom: 15px; box-shadow: var(--shadow);
   }
-  .algo-desc[data-active="profile"]    { border-color: var(--profile); }
-  .algo-desc[data-active="similarity"] { border-color: var(--sim); }
+  .algo-desc[data-active="profile"]    { background: #e0f3ff; border-color: var(--profile); }
+  .algo-desc[data-active="similarity"] { background: #e8fdf0; border-color: var(--sim); }
 
-  .results-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 18px;
-  }
-  .results-header h2 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 22px; }
-  .badge {
-    font-size: 11px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    background: rgba(200,240,96,.12);
-    color: var(--pop);
-    border: 1px solid rgba(200,240,96,.25);
-  }
-  .badge[data-algo="profile"]    { background: rgba(96,200,240,.12); color: var(--profile); border-color: rgba(96,200,240,.25); }
-  .badge[data-algo="similarity"] { background: rgba(240,96,144,.12); color: var(--sim); border-color: rgba(240,96,144,.25); }
+  .results-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .results-header h2 { font-weight: 700; font-size: 16px; color: #2f3542; }
+  .badge { font-size: 9px; padding: 2px 8px; border-radius: 12px; font-weight: 700; background: #ffeaa7; color: #d63031; }
 
   /* ── recommendation cards ── */
-  .recs { display: flex; flex-direction: column; gap: 10px; }
+  .recs { display: flex; flex-direction: column; gap: 6px; }
   .rec-item {
-    display: grid;
-    grid-template-columns: 32px 1fr auto;
-    align-items: center;
-    gap: 16px;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 12px 16px;
-    opacity: 0;
-    transform: translateY(8px);
-    animation: slideIn .3s forwards;
+    display: grid; grid-template-columns: 20px 1fr auto; align-items: center; gap: 10px;
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px;
+    box-shadow: var(--shadow); opacity: 0; transform: translateY(5px); animation: slideIn .3s forwards;
   }
   @keyframes slideIn { to { opacity: 1; transform: none; } }
-  .rank { font-size: 18px; font-family: 'Fraunces', serif; font-style: italic; color: var(--muted); }
-  .item-info .name { font-size: 13px; margin-bottom: 2px; }
-  .item-info .meta { font-size: 11px; color: var(--muted); }
-  .score-bar-wrap { display: flex; align-items: center; gap: 10px; }
-  .score-val { font-size: 13px; width: 36px; text-align: right; }
-  .bar-track { width: 100px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-  .bar-fill {
-    height: 100%;
-    background: var(--pop);
-    border-radius: 2px;
-    transform-origin: left;
-    animation: growBar .5s ease forwards;
-  }
+  .rank { font-size: 14px; font-weight: 700; color: #a4b0be; }
+  .item-info .name { font-size: 11px; font-weight: 500; }
+  .item-info .meta { font-size: 9px; color: var(--muted); }
+  .score-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .score-val { font-size: 11px; font-weight: 700; width: 25px; text-align: left; }
+  .bar-track { width: 60px; height: 6px; background: #dfe4ea; border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--pop); border-radius: 3px; transform-origin: right; animation: growBar .5s ease forwards; }
   @keyframes growBar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
   .bar-fill.profile    { background: var(--profile); }
   .bar-fill.similarity { background: var(--sim); }
 
   /* ── bias panel ── */
-  .bias-panel {
-    margin-top: 36px;
-    padding-top: 28px;
-    border-top: 1px solid var(--border);
-  }
-  .bias-panel h3 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 18px; margin-bottom: 16px; }
-  .bias-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  .bias-box {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 16px;
-  }
-  .bias-box .key  { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 6px; }
-  .bias-box .val  { font-size: 22px; font-family: 'Fraunces', serif; }
+  .bias-panel { margin-top: 15px; padding-top: 15px; border-top: 2px dashed var(--border); }
+  .bias-panel h3 { font-weight: 500; font-size: 13px; margin-bottom: 10px; color: #3742fa; }
+  .bias-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .bias-box { background: #f1f2f6; border-radius: 8px; padding: 8px; text-align: center; box-shadow: var(--shadow); }
+  .bias-box .key  { font-size: 9px; color: var(--muted); margin-bottom: 4px; font-weight: 700; }
+  .bias-box .val  { font-size: 14px; font-weight: 700; }
   .bias-box .val.pos { color: var(--sim); }
-  .bias-box .val.neg { color: var(--profile); }
-  .bias-box .val.neu { color: var(--pop); }
+  .bias-box .val.neg { color: var(--pop); }
+  .bias-box .val.neu { color: var(--profile); }
 
-  /* ── empty / loading ── */
-  .empty { color: var(--muted); padding: 40px 0; text-align: center; font-size: 12px; }
+  .empty { color: var(--muted); padding: 20px 0; text-align: center; font-size: 11px; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Recommender <em>System</em></h1>
-  <p class="subtitle">OOP Design Exercise · Java Simulation · Interactive Demo</p>
+  <h1>מערכת <em>המלצות</em></h1>
+  <p class="subtitle">הדגמה אינטראקטיבית קומפקטית • לוגיקה זהה למקור</p>
 </header>
 
 <div class="shell">
   <aside class="sidebar">
     <div>
-      <div class="label">Select User</div>
+      <div class="label">בחר משתמש</div>
       <select id="userSelect"></select>
     </div>
 
     <div id="userCardWrap">
-      <div class="label">User Profile</div>
+      <div class="label">פרופיל משתמש</div>
       <div class="user-card" id="userCard"></div>
     </div>
 
     <div>
-      <div class="label">Algorithm</div>
+      <div class="label">אלגוריתם</div>
       <div class="algo-btns">
-        <button class="algo-btn active" data-algo="popularity">▲ Popularity-Based</button>
-        <button class="algo-btn" data-algo="profile">◈ Profile-Based</button>
-        <button class="algo-btn" data-algo="similarity">⬡ Similarity-Based (CF)</button>
+        <button class="algo-btn active" data-algo="popularity">⭐ מבוסס פופולריות</button>
+        <button class="algo-btn" data-algo="profile">👤 מבוסס קבוצת גיל/מין</button>
+        <button class="algo-btn" data-algo="similarity">🔗 סינון שיתופי (CF)</button>
       </div>
     </div>
 
     <div>
-      <div class="label">Dataset Size — <span id="sizeLabel">200</span> ratings</div>
+      <div class="label">גודל מאגר — <span id="sizeLabel">200</span> דירוגים</div>
       <input type="range" id="sizeSlider" min="50" max="500" step="50" value="200">
     </div>
   </aside>
 
   <main>
-    <div class="algo-desc" id="algoDesc" data-active="popularity">
-      Recommends items with at least 100 ratings, sorted by average score. Safe choice for cold-start users.
-    </div>
+    <div class="algo-desc" id="algoDesc" data-active="popularity"></div>
 
     <div class="results-header">
-      <h2>Top 10 Recommendations</h2>
+      <h2>10 ההמלצות המובילות</h2>
       <span class="badge" id="algoBadge" data-algo="popularity">popularity</span>
     </div>
 
     <div class="recs" id="recsList"></div>
 
     <div class="bias-panel" id="biasPanel" style="display:none">
-      <h3>Bias Decomposition <span style="color:var(--muted);font-size:14px;font-family:'DM Mono'">(CF only)</span></h3>
+      <h3>פירוק הטיות (CF)</h3>
       <div class="bias-grid">
-        <div class="bias-box"><div class="key">Global Bias</div><div class="val neu" id="bGlobal">—</div></div>
-        <div class="bias-box"><div class="key">User Bias</div><div class="val" id="bUser">—</div></div>
-        <div class="bias-box"><div class="key">Avg Item Bias</div><div class="val" id="bItem">—</div></div>
+        <div class="bias-box"><div class="key">הטיה גלובלית</div><div class="val neu" id="bGlobal">—</div></div>
+        <div class="bias-box"><div class="key">הטיית משתמש</div><div class="val" id="bUser">—</div></div>
+        <div class="bias-box"><div class="key">ממוצע הטיית פריט</div><div class="val" id="bItem">—</div></div>
       </div>
     </div>
   </main>
 </div>
 
 <script>
-// ── Synthetic data generation ──────────────────────────────────────────────
+const GENRES = ['מדע בדיוני','דרמה','קומדיה','מותחן','רומנטיקה','אקשן','דוקומנטרי','פנטזיה','אימה','אנימציה'];
+const NAMES_M = ['אמיר','רותם','יואב','ניר','איתן','עומר','גיא','טל','דן','ליאור'];
+const NAMES_F = ['מאיה','נועה','שירה','הילה','טלי','רעות','גל','יעל','דנה','מיכל'];
+const ITEM_TITLES = ['סודות באפלה','האופק האחרון','רסיסי עבר','עיר של חול','פריחה שניה','שעון החול','קצה המחר','גן שקט','נקודת שבירה','אנומליה כחולה','סחף מסוכן','ממלכת נייר','עונה בוערת','סערה שקטה','קוד סודי','חוט הזהב','תדר אבוד','גשר רפאים','פרוטוקול עתיד','פעימת ניאון','מצפן שבור','מבוך קריסטל','גאות כסופה','העולם המוכר','אפקט השרשרת','מעגל פתוח','סטטיקה פראית','כוכב רחוק','שירת הים','צל הרים'];
 
-const GENRES  = ['Sci-Fi','Drama','Comedy','Thriller','Romance','Action','Documentary','Fantasy','Horror','Animation'];
-const NAMES_M = ['Amir','Rotem','Yoav','Nir','Eitan','Omer','Guy','Tal','Dan','Lior'];
-const NAMES_F = ['Maya','Noa','Shira','Hila','Tali','Reut','Gal','Yael','Dana','Michal'];
-const ITEM_TITLES = [
-  'Midnight Signal','The Last Archive','Parallel Echo','Frozen Orbit','City of Dust',
-  'Second Bloom','The Glass Hour','Iron Meridian','Silent Garden','Fracture Point',
-  'Blue Anomaly','Horizon Drift','Paper Kingdom','The Outer Rim','Ember Season',
-  'Quiet Storm','Dark Lattice','Golden Thread','Lost Frequency','Phantom Bridge',
-  'Velvet Protocol','Neon Pulse','Broken Compass','Crystal Maze','Silver Tide',
-  'The Known World','Cascade Effect','Final Horizon','Open Circuit','Wild Static'
-];
-
-let rng = (seed => {
-  return () => { seed ^= seed << 13; seed ^= seed >> 17; seed ^= seed << 5; return (seed >>> 0) / 4294967296; };
-})(42);
+let rng = seed => () => { seed ^= seed<<13; seed ^= seed>>17; seed ^= seed<<5; return (seed>>>0)/4294967296; };
 
 function buildDataset(numRatings) {
-  rng = (seed => {
-    return () => { seed ^= seed << 13; seed ^= seed >> 17; seed ^= seed << 5; return (seed >>> 0) / 4294967296; };
-  })(42);
-
+  let rand = rng(42);
   const users = Array.from({length: 20}, (_, i) => ({
-    id: i + 1,
-    name: i % 2 === 0 ? NAMES_F[Math.floor(i/2) % 10] : NAMES_M[Math.floor(i/2) % 10],
-    gender: i % 2 === 0 ? 'F' : 'M',
-    age: 18 + Math.floor(rng() * 45)
+    id: i+1, name: i%2===0 ? NAMES_F[Math.floor(i/2)%10] : NAMES_M[Math.floor(i/2)%10],
+    gender: i%2===0 ? 'F':'M', age: 18+Math.floor(rand()*45)
   }));
-
-  const items = ITEM_TITLES.map((title, i) => ({
-    id: i + 1,
-    name: title,
-    genre: GENRES[i % GENRES.length]
-  }));
-
-  // Each user has a genre affinity
-  const userAffinity = users.map(() => Math.floor(rng() * GENRES.length));
-  const itemBiasTrue = items.map(() => (rng() - 0.5) * 1.5);
-  const userBiasTrue = users.map(() => (rng() - 0.5) * 1.0);
-  const GLOBAL = 3.5;
-
+  const items = ITEM_TITLES.map((t, i) => ({ id: i+1, name: t, genre: GENRES[i%GENRES.length] }));
+  const userAff = users.map(() => Math.floor(rand()*GENRES.length));
+  const itemBias = items.map(() => (rand()-0.5)*1.5), userBias = users.map(() => (rand()-0.5)*1.0);
+  
   const ratings = [];
-  for (let k = 0; k < numRatings; k++) {
-    const user = users[Math.floor(rng() * users.length)];
-    const item = items[Math.floor(rng() * items.length)];
-    const genreMatch = items[item.id - 1].genre === GENRES[userAffinity[user.id - 1]] ? 0.6 : 0;
-    const raw = GLOBAL + userBiasTrue[user.id - 1] + itemBiasTrue[item.id - 1] + genreMatch + (rng() - 0.5) * 1.2;
-    const rating = Math.max(1, Math.min(5, Math.round(raw)));
-    ratings.push({ userId: user.id, itemId: item.id, rating });
+  for (let k=0; k<numRatings; k++) {
+    const u = users[Math.floor(rand()*users.length)], i = items[Math.floor(rand()*items.length)];
+    const match = i.genre === GENRES[userAff[u.id-1]] ? 0.6 : 0;
+    const raw = 3.5 + userBias[u.id-1] + itemBias[i.id-1] + match + (rand()-0.5)*1.2;
+    ratings.push({ userId: u.id, itemId: i.id, rating: Math.max(1, Math.min(5, Math.round(raw))) });
   }
-
   return { users, items, ratings };
 }
 
-// ── Recommender logic ──────────────────────────────────────────────────────
+const groupBy = (arr, fn) => arr.reduce((m, x) => { const k = fn(x); (m[k]=m[k]||[]).push(x); return m; }, {});
+const avg = (arr, fn) => arr?.length ? arr.reduce((s, x) => s+fn(x), 0)/arr.length : 0;
 
-function groupBy(arr, fn) {
-  return arr.reduce((m, x) => { const k = fn(x); (m[k] = m[k] || []).push(x); return m; }, {});
-}
-function avg(arr, fn) {
-  if (!arr || !arr.length) return 0;
-  return arr.reduce((s, x) => s + fn(x), 0) / arr.length;
-}
-
-function popularityRecommend(userId, { items, ratings }) {
-  const byItem = groupBy(ratings, r => r.itemId);
-  const byUser = groupBy(ratings, r => r.userId);
-  const rated  = new Set((byUser[userId] || []).map(r => r.itemId));
-
-  return items
-    .filter(it => (byItem[it.id] || []).length >= 3 && !rated.has(it.id))
-    .map(it => ({
-      item: it,
-      score: avg(byItem[it.id], r => r.rating),
-      count: (byItem[it.id] || []).length
-    }))
-    .sort((a, b) => b.score - a.score || b.count - a.count || a.item.name.localeCompare(b.item.name))
-    .slice(0, 10);
+function popularityRecommend(userId, {items, ratings}) {
+  const byItem = groupBy(ratings, r=>r.itemId), rated = new Set(ratings.filter(r=>r.userId===userId).map(r=>r.itemId));
+  return items.filter(it => (byItem[it.id]||[]).length >= 3 && !rated.has(it.id))
+    .map(it => ({ item: it, score: avg(byItem[it.id], r=>r.rating), count: (byItem[it.id]||[]).length }))
+    .sort((a,b) => b.score-a.score || b.count-a.count).slice(0, 10);
 }
 
-function profileRecommend(userId, { users, items, ratings }) {
-  const byUser    = groupBy(ratings, r => r.userId);
-  const me        = users.find(u => u.id === userId);
-  if (!me) return [];
-
-  const peers = users.filter(u =>
-    u.id !== userId &&
-    u.gender === me.gender &&
-    Math.abs(u.age - me.age) <= 5
-  );
-  const peerIds = new Set(peers.map(u => u.id));
-
-  const peerRatings = ratings.filter(r => peerIds.has(r.userId));
-  const byItem      = groupBy(peerRatings, r => r.itemId);
-  const rated       = new Set((byUser[userId] || []).map(r => r.itemId));
-
-  return items
-    .filter(it => (byItem[it.id] || []).length >= 2 && !rated.has(it.id))
-    .map(it => ({
-      item: it,
-      score: avg(byItem[it.id], r => r.rating),
-      count: (byItem[it.id] || []).length
-    }))
-    .sort((a, b) => b.score - a.score || b.count - a.count || a.item.name.localeCompare(b.item.name))
-    .slice(0, 10);
+function profileRecommend(userId, {users, items, ratings}) {
+  const me = users.find(u=>u.id===userId), rated = new Set(ratings.filter(r=>r.userId===userId).map(r=>r.itemId));
+  const peers = new Set(users.filter(u => u.id!==userId && u.gender===me.gender && Math.abs(u.age-me.age)<=5).map(u=>u.id));
+  const byItem = groupBy(ratings.filter(r=>peers.has(r.userId)), r=>r.itemId);
+  return items.filter(it => (byItem[it.id]||[]).length >= 2 && !rated.has(it.id))
+    .map(it => ({ item: it, score: avg(byItem[it.id], r=>r.rating), count: (byItem[it.id]||[]).length }))
+    .sort((a,b) => b.score-a.score || b.count-a.count).slice(0, 10);
 }
 
-function similarityRecommend(userId, { users, items, ratings }) {
-  const byUser  = groupBy(ratings, r => r.userId);
-  const byItem  = groupBy(ratings, r => r.itemId);
-  const GLOBAL  = avg(ratings, r => r.rating);
+function similarityRecommend(userId, {users, items, ratings}) {
+  const byUser = groupBy(ratings, r=>r.userId), byItem = groupBy(ratings, r=>r.itemId), gl = avg(ratings, r=>r.rating);
+  const ib = {}, ub = {};
+  items.forEach(it => ib[it.id] = (byItem[it.id]||[]).length ? avg(byItem[it.id], r=>r.rating)-gl : 0);
+  users.forEach(u => ub[u.id] = (byUser[u.id]||[]).length ? avg(byUser[u.id], r=>r.rating-gl-(ib[r.itemId]||0)) : 0);
+  const bfr = r => r.rating - gl - (ib[r.itemId]||0) - (ub[r.userId]||0);
+  
+  const sim = (u1, u2) => {
+    const m2 = new Map((byUser[u2]||[]).map(r=>[r.itemId, r]));
+    const shared = (byUser[u1]||[]).filter(r=>m2.has(r.itemId));
+    return shared.length<3 ? 0 : shared.reduce((s, r) => s+bfr(r)*bfr(m2.get(r.itemId)), 0);
+  };
 
-  const itemBias = {};
-  items.forEach(it => {
-    const rs = byItem[it.id] || [];
-    itemBias[it.id] = rs.length ? avg(rs, r => r.rating) - GLOBAL : 0;
-  });
-  const userBias = {};
-  users.forEach(u => {
-    const rs = byUser[u.id] || [];
-    userBias[u.id] = rs.length
-      ? avg(rs, r => r.rating - GLOBAL - (itemBias[r.itemId] || 0))
-      : 0;
-  });
+  const neighbors = users.filter(u=>u.id!==userId).map(u=>({id:u.id, s:sim(userId, u.id)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,10);
+  const rated = new Set((byUser[userId]||[]).map(r=>r.itemId));
 
-  function bfr(r) { return r.rating - GLOBAL - (itemBias[r.itemId] || 0) - (userBias[r.userId] || 0); }
-
-  function sim(u1, u2) {
-    const r1 = byUser[u1] || [], r2 = byUser[u2] || [];
-    const m2  = new Map(r2.map(r => [r.itemId, r]));
-    const shared = r1.filter(r => m2.has(r.itemId));
-    if (shared.length < 3) return 0;
-    return shared.reduce((s, r) => s + bfr(r) * bfr(m2.get(r.itemId)), 0);
-  }
-
-  const neighbors = users
-    .filter(u => u.id !== userId)
-    .map(u => ({ id: u.id, s: sim(userId, u.id) }))
-    .filter(x => x.s > 0)
-    .sort((a, b) => b.s - a.s)
-    .slice(0, 10)
-    .map(x => x.id);
-
-  const rated = new Set((byUser[userId] || []).map(r => r.itemId));
-
-  const recs = items
-    .filter(it => !rated.has(it.id))
-    .filter(it => neighbors.filter(nId =>
-      (byUser[nId] || []).some(r => r.itemId === it.id)).length >= 2)
-    .map(it => {
-      let ws = 0, ss = 0;
-      neighbors.forEach(nId => {
-        const match = (byUser[nId] || []).find(r => r.itemId === it.id);
-        if (match) { const s = sim(userId, nId); ws += s * bfr(match); ss += s; }
-      });
-      const interaction = ss === 0 ? 0 : ws / ss;
-      const score = GLOBAL + (itemBias[it.id] || 0) + (userBias[userId] || 0) + interaction;
-      return { item: it, score: +score.toFixed(2), count: (byItem[it.id] || []).length };
-    })
-    .sort((a, b) => b.score - a.score || b.count - a.count || a.item.name.localeCompare(b.item.name))
-    .slice(0, 10);
-
-  return { recs, globalBias: GLOBAL, userBias: userBias[userId] || 0, avgItemBias: avg(items, it => Math.abs(itemBias[it.id] || 0)) };
+  const recs = items.filter(it=>!rated.has(it.id) && neighbors.filter(n=>(byUser[n.id]||[]).some(r=>r.itemId===it.id)).length>=2).map(it => {
+    let ws=0, ss=0;
+    neighbors.forEach(n => { const m=(byUser[n.id]||[]).find(r=>r.itemId===it.id); if(m){ws+=n.s*bfr(m); ss+=n.s;} });
+    return { item: it, score: +(gl+(ib[it.id]||0)+(ub[userId]||0)+(ss?ws/ss:0)).toFixed(2), count: (byItem[it.id]||[]).length };
+  }).sort((a,b) => b.score-a.score || b.count-a.count).slice(0, 10);
+  
+  return { recs, globalBias: gl, userBias: ub[userId]||0, avgItemBias: avg(items, it=>Math.abs(ib[it.id]||0)) };
 }
-
-// ── UI ─────────────────────────────────────────────────────────────────────
 
 const ALGO_DESCS = {
-  popularity: 'Recommends items with enough ratings to be statistically significant, sorted by average score. Safe choice for cold-start users — no personalisation needed.',
-  profile:    'Finds users of the same gender and within ±5 years of age, then surfaces items that demographic group rated highly. Simple, interpretable, and bias-free.',
-  similarity: 'Collaborative filtering with bias correction. Computes user similarity as the dot product of bias-free rating vectors. Predicted score = globalBias + itemBias + userBias + weighted neighbour votes.'
+  popularity: 'ממליץ על פריטים עם מספיק דירוגים, ממוינים לפי ציון ממוצע. בחירה בטוחה למשתמשים חדשים.',
+  profile: 'מוצא משתמשים באותו מין ובטווח של ±5 שנים, וממליץ על פריטים שהם אהבו. פשוט וללא הטיות.',
+  similarity: 'סינון שיתופי מתקדם. מחשב דמיון בין משתמשים כווקטור ומנבא ציון לפי הטיות משתמש ופריט.'
 };
 
-let dataset = buildDataset(200);
-let currentAlgo = 'popularity';
-let currentUser = 1;
+let dataset = buildDataset(200), currentAlgo = 'popularity', currentUser = 1;
+const DOM = { sel:id=>document.getElementById(id), q:s=>document.querySelectorAll(s) };
 
-const userSelect  = document.getElementById('userSelect');
-const userCard    = document.getElementById('userCard');
-const recsList    = document.getElementById('recsList');
-const algoDesc    = document.getElementById('algoDesc');
-const algoBadge   = document.getElementById('algoBadge');
-const biasPanel   = document.getElementById('biasPanel');
-const sizeSlider  = document.getElementById('sizeSlider');
-const sizeLabel   = document.getElementById('sizeLabel');
-
-function populateUsers() {
-  userSelect.innerHTML = '';
-  dataset.users.forEach(u => {
-    const o = document.createElement('option');
-    o.value = u.id;
-    o.textContent = `#${u.id} — ${u.name} (${u.gender}, ${u.age})`;
-    userSelect.appendChild(o);
-  });
+function init() {
+  DOM.sel('userSelect').innerHTML = dataset.users.map(u=>`<option value="${u.id}">${u.name} (${u.gender==='F'?'נ':'ז'}, ${u.age})</option>`).join('');
+  render();
 }
 
-function renderUserCard(userId) {
-  const u = dataset.users.find(u => u.id === userId);
-  if (!u) return;
-  const byUser = groupBy(dataset.ratings, r => r.userId);
-  const count  = (byUser[userId] || []).length;
-  userCard.innerHTML = `
-    <span>Name  </span><strong>${u.name}</strong><br>
-    <span>Gender</span><strong>  ${u.gender === 'F' ? '♀ Female' : '♂ Male'}</strong><br>
-    <span>Age   </span><strong>  ${u.age}</strong><br>
-    <span>Ratings </span><strong>${count} items rated</strong>
-  `;
-}
+function render() {
+  const u = dataset.users.find(u=>u.id===currentUser), count = (dataset.ratings.filter(r=>r.userId===currentUser)).length;
+  DOM.sel('userCard').innerHTML = `<span>שם: </span><strong>${u.name}</strong><br><span>מין: </span><strong>${u.gender==='F'?'♀ נקבה':'♂ זכר'}</strong><br><span>גיל: </span><strong>${u.age}</strong><br><span>דירוגים: </span><strong>${count}</strong>`;
+  DOM.sel('algoDesc').textContent = ALGO_DESCS[currentAlgo];
+  DOM.sel('algoDesc').dataset.active = DOM.sel('algoBadge').dataset.algo = currentAlgo;
+  DOM.sel('algoBadge').textContent = currentAlgo;
+  DOM.sel('biasPanel').style.display = 'none';
 
-function renderRecs() {
-  recsList.innerHTML = '';
-  algoDesc.textContent = ALGO_DESCS[currentAlgo];
-  algoDesc.dataset.active = currentAlgo;
-  algoBadge.textContent   = currentAlgo;
-  algoBadge.dataset.algo  = currentAlgo;
-  biasPanel.style.display = 'none';
-
-  let recs, maxScore;
-
-  if (currentAlgo === 'popularity') {
-    recs = popularityRecommend(currentUser, dataset);
-    maxScore = 5;
-  } else if (currentAlgo === 'profile') {
-    recs = profileRecommend(currentUser, dataset);
-    maxScore = 5;
-  } else {
-    const result = similarityRecommend(currentUser, dataset);
-    recs = result.recs;
-    maxScore = Math.max(5, ...recs.map(r => r.score));
-
-    biasPanel.style.display = 'block';
-    document.getElementById('bGlobal').textContent = result.globalBias.toFixed(2);
-    const ub = document.getElementById('bUser');
-    ub.textContent = (result.userBias >= 0 ? '+' : '') + result.userBias.toFixed(2);
-    ub.className = 'val ' + (result.userBias > 0.05 ? 'pos' : result.userBias < -0.05 ? 'neg' : 'neu');
-    document.getElementById('bItem').textContent = '±' + result.avgItemBias.toFixed(2);
+  let recs, mS=5;
+  if(currentAlgo==='popularity') recs = popularityRecommend(currentUser, dataset);
+  else if(currentAlgo==='profile') recs = profileRecommend(currentUser, dataset);
+  else {
+    const res = similarityRecommend(currentUser, dataset); recs = res.recs; mS = Math.max(5, ...recs.map(r=>r.score));
+    DOM.sel('biasPanel').style.display = 'block';
+    DOM.sel('bGlobal').textContent = res.globalBias.toFixed(2);
+    const ub = DOM.sel('bUser'); ub.textContent = (res.userBias>=0?'+':'')+res.userBias.toFixed(2);
+    ub.className = 'val '+(res.userBias>0.05?'pos':res.userBias<-0.05?'neg':'neu');
+    DOM.sel('bItem').textContent = '±'+res.avgItemBias.toFixed(2);
   }
 
-  if (!recs || !recs.length) {
-    recsList.innerHTML = '<div class="empty">No recommendations — try a different user or algorithm.</div>';
-    return;
-  }
-
-  recs.forEach((rec, i) => {
-    const pct   = Math.min(1, Math.max(0, rec.score / maxScore));
-    const delay = i * 40;
-    const div   = document.createElement('div');
-    div.className  = 'rec-item';
-    div.style.animationDelay = delay + 'ms';
-    div.innerHTML = `
-      <div class="rank">${i + 1}</div>
-      <div class="item-info">
-        <div class="name">${rec.item.name}</div>
-        <div class="meta">${rec.item.genre} · ${rec.count} ratings</div>
-      </div>
-      <div class="score-bar-wrap">
-        <div class="score-val">${rec.score.toFixed ? rec.score.toFixed(2) : rec.score}</div>
-        <div class="bar-track">
-          <div class="bar-fill ${currentAlgo}" style="width:${(pct*100).toFixed(1)}%;animation-delay:${delay+200}ms"></div>
-        </div>
-      </div>`;
-    recsList.appendChild(div);
-  });
+  DOM.sel('recsList').innerHTML = recs.length ? recs.map((r,i) => `
+    <div class="rec-item" style="animation-delay:${i*30}ms">
+      <div class="rank">${i+1}</div>
+      <div class="item-info"><div class="name">${r.item.name}</div><div class="meta">${r.item.genre} • ${r.count} דירוגים</div></div>
+      <div class="score-bar-wrap"><div class="score-val">${r.score.toFixed?r.score.toFixed(2):r.score}</div>
+      <div class="bar-track"><div class="bar-fill ${currentAlgo}" style="width:${Math.min(100,(r.score/mS)*100)}%;animation-delay:${i*30+150}ms"></div></div></div>
+    </div>`).join('') : '<div class="empty">אין המלצות — נסה משתמש או אלגוריתם אחר.</div>';
 }
 
-// events
-userSelect.addEventListener('change', () => {
-  currentUser = +userSelect.value;
-  renderUserCard(currentUser);
-  renderRecs();
-});
+DOM.sel('userSelect').addEventListener('change', e=>{ currentUser = +e.target.value; render(); });
+DOM.q('.algo-btn').forEach(b=>b.addEventListener('click', ()=>{ DOM.q('.algo-btn').forEach(btn=>btn.classList.remove('active')); b.classList.add('active'); currentAlgo=b.dataset.algo; render(); }));
+DOM.sel('sizeSlider').addEventListener('input', e=>{ DOM.sel('sizeLabel').textContent=e.target.value; dataset=buildDataset(+e.target.value); init(); });
 
-document.querySelectorAll('.algo-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.algo-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentAlgo = btn.dataset.algo;
-    renderRecs();
-  });
-});
-
-sizeSlider.addEventListener('input', () => {
-  const n = +sizeSlider.value;
-  sizeLabel.textContent = n;
-  dataset = buildDataset(n);
-  populateUsers();
-  renderUserCard(currentUser);
-  renderRecs();
-});
-
-// init
-populateUsers();
-renderUserCard(currentUser);
-renderRecs();
+init();
 </script>
 </body>
 </html>
